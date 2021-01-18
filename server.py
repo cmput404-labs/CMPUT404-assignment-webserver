@@ -28,6 +28,22 @@ from os import path
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+###################################################################################
+# Copyright [2021] Haotian Qi
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###################################################################################
+
 
 BASE_URL = "http://127.0.0.1:8080"
 
@@ -43,12 +59,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.clear()
         
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
+        # print ("Got a request of: %s\n" % self.data)
         # self.request.sendall(bytearray("OK",'utf-8'))
        
-        self.extract()        
+        if len(self.data) != 0:
+            self.extract()        
 
-        self.do_send()
+            self.do_send()
 
             
     def clear(self):
@@ -61,10 +78,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
         data_array = self.data.decode("utf-8").split(' ')
 
         method_str =  data_array[0]
-        print("method: " + method_str + '\n')
+        # print("method: " + method_str + '\n')
 
         dir_str = data_array[1]
-        print("dir: " + dir_str + '\n')
+        # print("dir: " + dir_str + '\n')
 
         # check request method type
         if method_str == "GET":            
@@ -78,7 +95,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         global STR_TO_SEND, END_LINE_STR
 
         if self.exist_end_slash(dir_str): #dir
-            print("have slash")
+            # print("have slash")
             #check path
             if self.legal_path(dir_str):          
                 STR_TO_SEND += "200 OK" + END_LINE_STR      
@@ -89,7 +106,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             else:
                 STR_TO_SEND += "404 Not Found" + END_LINE_STR
         else: #file or wrong dir format
-            print("dont have slash")
+            # print("dont have slash")
             #check availability
             if self.legal_path(dir_str):
                 # a file ?
@@ -102,7 +119,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             else:
                 STR_TO_SEND += "404 Not Found" + END_LINE_STR
         
-        print(STR_TO_SEND)
+        # print(STR_TO_SEND)
             
 
     
