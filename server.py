@@ -52,7 +52,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
             
     def clear(self):
-        global STR_TO_SEND = "HTTP/1.1 " 
+        global STR_TO_SEND
+        STR_TO_SEND = "HTTP/1.1 " 
+        
 
     def extract(self):
         #convert into string
@@ -73,23 +75,25 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
     # complete status code of GET
     def GET(self, dir_str):
+        global STR_TO_SEND
         print("in get")
+
         if self.exist_end_slash(dir_str):
             print("have slash")
             #check path
             if self.legal_path(dir_str):
-                global STR_TO_SEND += "200 OK" + END_LINE_STR
-                self.load_content()
+                STR_TO_SEND += "200 OK" + END_LINE_STR
+                self.load_content(dir_str)
             else:
-                global STR_TO_SEND += "404 Not Found" + END_LINE_STR
+                STR_TO_SEND += "404 Not Found" + END_LINE_STR
         else:
             print("dont have slash")
             #check availability
             if self.legal_path(dir_str):
-                global STR_TO_SEND += "301 Moved Permanently" + END_LINE_STR
-                global STR_TO_SEND += "Location: " + BASE_URL + dir_str + '/' + END_LINE_STR
+                STR_TO_SEND += "301 Moved Permanently" + END_LINE_STR
+                STR_TO_SEND += "Location: " + BASE_URL + dir_str + '/' + END_LINE_STR
             else:
-                global STR_TO_SEND += "404 Not Found" + END_LINE_STR
+                STR_TO_SEND += "404 Not Found" + END_LINE_STR
             
 
     
@@ -106,7 +110,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
 
     def not_GET(self):
-        global STR_TO_SEND += "405 Method Not Allowed" + END_LINE_STR
+        global STR_TO_SEND
+        STR_TO_SEND += "405 Method Not Allowed" + END_LINE_STR
 
 
     def exist_end_slash(self, dir_str):
@@ -114,6 +119,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
 
     def do_send(self):
+        global STR_TO_SEND
         self.request.sendall(bytearray(STR_TO_SEND,'utf-8'))
 
 
