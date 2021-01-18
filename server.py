@@ -75,25 +75,34 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
     # complete status code of GET
     def GET(self, dir_str):
-        global STR_TO_SEND
-        print("in get")
+        global STR_TO_SEND, END_LINE_STR
 
-        if self.exist_end_slash(dir_str):
+        if self.exist_end_slash(dir_str): #dir
             print("have slash")
             #check path
-            if self.legal_path(dir_str):
-                STR_TO_SEND += "200 OK" + END_LINE_STR
-                self.load_content(dir_str)
+            if self.legal_path(dir_str):          
+                STR_TO_SEND += "200 OK" + END_LINE_STR      
+                if self.is_file(dir_str):                    
+                    self.load_file(dir_str)
+                else:
+                    self.load_path(dir_str)
             else:
                 STR_TO_SEND += "404 Not Found" + END_LINE_STR
-        else:
+        else: #file or wrong dir format
             print("dont have slash")
             #check availability
             if self.legal_path(dir_str):
-                STR_TO_SEND += "301 Moved Permanently" + END_LINE_STR
-                STR_TO_SEND += "Location: " + BASE_URL + dir_str + '/' + END_LINE_STR
+                # a file ?
+                if self.is_file(dir_str):
+                    STR_TO_SEND += "200 OK" + END_LINE_STR
+                    self.load_file(dir_str)
+                else:
+                    STR_TO_SEND += "301 Moved Permanently" + END_LINE_STR
+                    STR_TO_SEND += "Location: " + BASE_URL + dir_str + '/' + END_LINE_STR
             else:
                 STR_TO_SEND += "404 Not Found" + END_LINE_STR
+        
+        print(STR_TO_SEND)
             
 
     
@@ -101,16 +110,52 @@ class MyWebServer(socketserver.BaseRequestHandler):
         base_folder_str = 'www'
         norm_path_str = path.normpath(base_folder_str + dir_str)
         path_seq = [norm_path_str, base_folder_str]
-        
+
         # the path exist AND path under 'www' folder
         return path.exists(norm_path_str) and (path.commonpath(path_seq) == base_folder_str)
 
-    def load_content(self, dir_str):
-        pass
+
+    def is_file(self, dir_str):
+        base_folder_str = 'www'
+        return path.isfile(base_folder_str + dir_str)
+
+    
+    def load_file(self, dir_str):
+        global STR_TO_SEND, END_LINE_STR
+        file_name = dir_str.split("/")[-1]
+        file_type = file_name.split(".")[-1]
+
+        # check file type
+        if file_type == "css":
+                STR_TO_SEND += "Content-Type: text/css; charset=UTF-8" + END_LINE_STR                
+        else:
+                STR_TO_SEND += "Content-Type: text/html; charset=UTF-8" + END_LINE_STR
+        STR_TO_SEND += END_LINE_STR
 
 
+        #load file
+        f = open("www" + dir_str)
+        for l in f:
+            STR_TO_SEND += l + END_LINE_STR
+        f.close()
+
+    
+    def load_path(self, dir_str):
+        global STR_TO_SEND, END_LINE_STR
+
+        #mime-type
+        STR_TO_SEND += "Content-Type: text/html; charset=UTF-8" + END_LINE_STR
+        STR_TO_SEND += END_LINE_STR
+
+        #load index.html
+        f = open("www" + dir_str + "index.html")
+        for l in f:
+            STR_TO_SEND += l + END_LINE_STR
+        f.close()
+
+    
     def not_GET(self):
-        global STR_TO_SEND
+        global STR_TO_SEND, END_LINE_STR
         STR_TO_SEND += "405 Method Not Allowed" + END_LINE_STR
 
 
